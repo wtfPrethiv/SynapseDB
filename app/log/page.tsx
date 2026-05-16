@@ -162,7 +162,8 @@ export default function LogRunPage() {
 
         {/* Info banner */}
         {session && (
-        <motion.div
+          <>
+          <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.12 }}
@@ -182,10 +183,10 @@ export default function LogRunPage() {
             <code style={{ fontFamily: "var(--font-mono)", background: "var(--surface-2)", padding: "0 3px", borderRadius: "2px" }}>auditlog</code> atomically.
             Any failure triggers a full rollback.
           </span>
-        </motion.div>
+          </motion.div>
 
-        {/* Form */}
-        <motion.form
+          {/* Form */}
+          <motion.form
           className="form-card"
           onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 16 }}
@@ -328,7 +329,7 @@ export default function LogRunPage() {
             {/* Accuracy */}
             <div className="form-group">
               <label className="form-label" htmlFor="init-accuracy">
-                <Target size={11} /> Initial Accuracy (0–1)
+                <Target size={11} /> Initial Accuracy (0-1)
               </label>
               <input
                 id="init-accuracy"
@@ -367,20 +368,20 @@ export default function LogRunPage() {
               )}
             </button>
           </div>
-        </motion.form>
+          </motion.form>
 
-        {/* SQL preview */}
-        <motion.div
-          className="card mt-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          style={{ background: "var(--surface-2)", fontFamily: "var(--font-mono)", fontSize: "0.72rem" }}
-        >
-          <div style={{ color: "var(--ink-4)", marginBottom: "0.75rem", fontSize: "0.67rem", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>
-            SQL Preview — ACID Transaction
-          </div>
-          <pre style={{ color: "var(--ink-3)", lineHeight: 1.9, overflowX: "auto", whiteSpace: "pre-wrap" }}>
+          {/* SQL preview */}
+          <motion.div
+            className="card mt-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            style={{ background: "var(--surface-2)", fontFamily: "var(--font-mono)", fontSize: "0.72rem" }}
+          >
+            <div style={{ color: "var(--ink-4)", marginBottom: "0.75rem", fontSize: "0.67rem", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>
+              SQL Preview — ACID Transaction
+            </div>
+            <pre style={{ color: "var(--ink-3)", lineHeight: 1.9, overflowX: "auto", whiteSpace: "pre-wrap" }}>
 {`BEGIN;
 
 INSERT INTO experiments (researcher_id, hardware_id, commit_id, dataset_id, experiment_name, random_seed, status)
@@ -397,8 +398,9 @@ INSERT INTO auditlog (action_type, table_name, description)
   VALUES ('INSERT', 'experiments', 'New experiment logged via dashboard');
 
 COMMIT; -- Rollback on any failure`}
-          </pre>
-        </motion.div>
+            </pre>
+          </motion.div>
+          </>
         )}
       </div>
 
