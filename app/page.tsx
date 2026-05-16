@@ -1,65 +1,291 @@
-import Image from "next/image";
+"use client";
+import "./homepage.css";
 
-export default function Home() {
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import Preloader from "./components/Preloader";
+import {
+  GitBranch,
+  ShieldCheck,
+  Network,
+  ArrowRight,
+  FlaskConical,
+  Lock,
+  Cpu,
+  BarChart3,
+  ChevronRight,
+} from "lucide-react";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
+  }),
+};
+
+const features = [
+  { icon: GitBranch, name: "Full Lineage Tracking", desc: "Every model links to the exact dataset version, code commit, and hardware. No ambiguity, ever." },
+  { icon: ShieldCheck, name: "ACID Transactions", desc: "Experiments write to multiple tables atomically. Any failure rolls back the entire operation." },
+  { icon: Lock, name: "Tamper-Proof Audits", desc: "High-performing results are locked from deletion. Every action is logged with a timestamp." },
+  { icon: Network, name: "Provenance DAG", desc: "Visualize the exact dependency graph of any model, from dataset to final metric." },
+  { icon: FlaskConical, name: "Reproducibility Checks", desc: "Automatic alerts for missing seeds, CUDA mismatches, and hardware drift between runs." },
+  { icon: Cpu, name: "Hardware Telemetry", desc: "Track GPU utilization across all runs to optimize compute spend and identify bottlenecks." },
+];
+
+const steps = [
+  { step: "01", title: "Log a Run", desc: "Fill in the experiment parameters: dataset version, commit hash, hardware, and initial metrics." },
+  { step: "02", title: "ACID Transaction", desc: "NEXUS writes to all tables atomically. Any failure triggers a complete rollback." },
+  { step: "03", title: "Provenance DAG", desc: "An immutable lineage graph is constructed linking every upstream dependency." },
+  { step: "04", title: "Verify & Audit", desc: "Any researcher can replay the exact experiment using the stored configuration snapshot." },
+];
+
+export default function HomePage() {
+  const [loaded, setLoaded] = useState(false);
+
+  const handlePreloaderComplete = useCallback(() => {
+    setLoaded(true);
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <AnimatePresence mode="popLayout">
+        {!loaded && <Preloader key="preloader-root" onComplete={handlePreloaderComplete} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {loaded && (
+          <motion.div
+            key="homepage"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            style={{ background: "var(--bg)", minHeight: "100vh" }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {/* ── NAVBAR ── */}
+            <motion.header
+              className="homepage-nav"
+              initial={{ y: -56, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.55, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+            >
+              <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "100%", width: "100%", maxWidth: "1320px", margin: "0 auto", padding: "0 2rem" }}>
+                <Link href="/" className="navbar-logo">
+                  <span className="logo-mark">N</span>
+                  <span className="logo-text">NEXUS</span>
+                </Link>
+
+                <nav style={{ display: "flex", gap: "0.15rem", alignItems: "center" }}>
+                  {[
+                    { href: "/dashboard", label: "Dashboard" },
+                    { href: "/experiments", label: "Experiments" },
+                    { href: "/hardware", label: "Hardware" },
+                    { href: "/datasets", label: "Datasets" },
+                  ].map((l) => (
+                    <Link key={l.href} href={l.href} className="nav-link">
+                      {l.label}
+                    </Link>
+                  ))}
+                </nav>
+
+                <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+                  <Link href="/dashboard" className="btn-hero-secondary" style={{ padding: "0.45rem 1rem", fontSize: "0.8rem" }}>
+                    Sign in
+                  </Link>
+                  <Link href="/dashboard" className="btn-hero-primary" style={{ padding: "0.45rem 1rem", fontSize: "0.8rem" }}>
+                    Launch Dashboard
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
+              </div>
+            </motion.header>
+
+            {/* ── HERO ── */}
+            <section className="hero">
+              <div className="hero-grid-bg" />
+              <div className="container" style={{ position: "relative" }}>
+
+                <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
+                  <span className="hero-eyebrow">
+                    <span className="hero-eyebrow-dot" />
+                    Solving the ML Reproducibility Crisis
+                  </span>
+                </motion.div>
+
+                <motion.h1 className="hero-title" custom={1} variants={fadeUp} initial="hidden" animate="visible">
+                  Your AI experiments,{" "}
+                  <span className="hero-title-dim">provably reproducible.</span>
+                </motion.h1>
+
+                <motion.p className="hero-desc" custom={2} variants={fadeUp} initial="hidden" animate="visible">
+                  NEXUS is a strict audit trail for machine learning labs. Link every model to the exact
+                  dataset, code commit, and GPU config — and prevent benchmark tampering forever.
+                </motion.p>
+
+                <motion.div className="hero-actions" custom={3} variants={fadeUp} initial="hidden" animate="visible">
+                  <Link href="/dashboard" className="btn-hero-primary">
+                    <FlaskConical size={15} />
+                    Enter the Lab
+                  </Link>
+                  <Link href="/experiments" className="btn-hero-secondary">
+                    Browse Experiments
+                    <ChevronRight size={14} />
+                  </Link>
+                </motion.div>
+
+                <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible">
+                  <div className="hero-stats-row">
+                    {[
+                      { num: "1,247", label: "Experiments Logged" },
+                      { num: "99.4%", label: "Reproducibility Rate" },
+                      { num: "38", label: "Active Researchers" },
+                      { num: "91", label: "SOTA Models" },
+                    ].map((s) => (
+                      <div key={s.label} className="hero-stat-card">
+                        <span className="hero-stat-num">{s.num}</span>
+                        <span className="hero-stat-label">{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            </section>
+
+            {/* ── FEATURES ── */}
+            <section className="features-section" style={{ borderTop: "1px solid var(--border)" }}>
+              <div className="container">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55 }}
+                >
+                  <span className="features-tag">Platform Features</span>
+                  <h2 className="features-title">Every layer of your pipeline,{" "}
+                    <span style={{ color: "var(--ink-4)" }}>tracked.</span>
+                  </h2>
+                  <p className="features-desc">
+                    From dataset versioning to GPU telemetry, NEXUS captures the full provenance
+                    chain so you can reproduce any result, any time.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  className="features-grid"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, delay: 0.1 }}
+                >
+                  {features.map((f) => {
+                    const Icon = f.icon;
+                    return (
+                      <div key={f.name} className="feature-card">
+                        <div className="feature-icon">
+                          <Icon size={17} color="var(--ink-2)" />
+                        </div>
+                        <h3 className="feature-name">{f.name}</h3>
+                        <p className="feature-desc">{f.desc}</p>
+                      </div>
+                    );
+                  })}
+                </motion.div>
+              </div>
+            </section>
+
+            {/* ── HOW IT WORKS ── */}
+            <section style={{ padding: "5rem 0", borderTop: "1px solid var(--border)", background: "var(--surface-2)" }}>
+              <div className="container">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55 }}
+                  style={{ marginBottom: "2.5rem" }}
+                >
+                  <span className="features-tag">How It Works</span>
+                  <h2 className="features-title">From commit to{" "}
+                    <span style={{ color: "var(--ink-4)" }}>certified result.</span>
+                  </h2>
+                </motion.div>
+
+                <motion.div
+                  className="steps-row"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, delay: 0.1 }}
+                >
+                  {steps.map((s) => (
+                    <div key={s.step} className="step-card">
+                      <div className="step-number">{s.step}</div>
+                      <h3 className="step-title">{s.title}</h3>
+                      <p className="step-desc">{s.desc}</p>
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+            </section>
+
+            {/* ── CTA ── */}
+            <section className="cta-section">
+              <div className="container">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55 }}
+                >
+                  <span className="features-tag">Get Started</span>
+                  <h2 className="cta-title">
+                    Ready to make your research{" "}
+                    <span style={{ color: "var(--ink-4)" }}>reproducible?</span>
+                  </h2>
+                  <p className="cta-desc">
+                    Join 38 researchers already using NEXUS to build trusted, verifiable ML pipelines.
+                  </p>
+                  <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+                    <Link href="/dashboard" className="btn-hero-primary">
+                      <BarChart3 size={15} />
+                      Launch Dashboard
+                    </Link>
+                    <Link href="/log" className="btn-hero-secondary">
+                      Log Your First Run
+                      <ChevronRight size={14} />
+                    </Link>
+                  </div>
+                </motion.div>
+              </div>
+            </section>
+
+            {/* ── FOOTER ── */}
+            <footer className="site-footer">
+              <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+                <Link href="/" className="navbar-logo">
+                  <span className="logo-mark">N</span>
+                  <span className="logo-text">NEXUS</span>
+                </Link>
+                <p style={{ fontSize: "0.72rem", color: "var(--ink-4)", fontFamily: "var(--font-mono)" }}>
+                  AI Provenance &amp; Reproducibility Tracker
+                </p>
+                <div style={{ display: "flex", gap: "1.5rem" }}>
+                  {[
+                    { label: "Dashboard", href: "/dashboard" },
+                    { label: "Experiments", href: "/experiments" },
+                    { label: "Log Run", href: "/log" },
+                  ].map((l) => (
+                    <Link key={l.label} href={l.href} style={{ fontSize: "0.78rem", color: "var(--ink-4)" }}>
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </footer>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
