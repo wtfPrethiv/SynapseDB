@@ -16,45 +16,9 @@ A full-stack platform for ML research labs to build trusted, verifiable experime
 
 ---
 
-## Screenshots
+## Overview
 
-<details>
-<summary><strong>🏠 Landing Page</strong></summary>
-
-![Landing Page](docs/screenshots/homepage.png)
-![Features Section](docs/screenshots/features.png)
-
-</details>
-
-<details>
-<summary><strong>🔐 Authentication</strong></summary>
-
-![Sign In](docs/screenshots/signin.png)
-
-</details>
-
-<details>
-<summary><strong>📊 Dashboard</strong></summary>
-
-![Dashboard Overview](docs/screenshots/dashboard.png)
-
-</details>
-
-<details>
-<summary><strong>🧪 Experiments</strong></summary>
-
-![Experiments List](docs/screenshots/experiments.png)
-![Experiment Detail](docs/screenshots/experiment-detail.png)
-
-</details>
-
-<details>
-<summary><strong>🖥️ Hardware & Datasets</strong></summary>
-
-![Hardware](docs/screenshots/hardware.png)
-![Datasets](docs/screenshots/datasets.png)
-
-</details>
+SynapseDB gives ML research teams a single source of truth for experiment provenance. Every run is linked to the exact dataset version, code commit, and hardware configuration that produced it — atomically, with a tamper-proof audit trail. The result is a reproducible, auditable record of your lab's entire research history.
 
 ---
 
@@ -66,7 +30,7 @@ A full-stack platform for ML research labs to build trusted, verifiable experime
 - **Provenance DAG** — Visual dependency graph from dataset to final metric for any experiment
 - **Reproducibility Checks** — Automatic alerts for missing seeds, CUDA mismatches, and hardware drift
 - **Hardware Telemetry** — GPU utilization tracking across all runs
-- **OAuth Authentication** — GitHub & Google sign-in via NextAuth.js v5
+- **OAuth Authentication** — GitHub and Google sign-in via NextAuth.js v5
 - **Demo Mode** — Full read-only access with sample data for unauthenticated users
 
 ---
@@ -75,14 +39,14 @@ A full-stack platform for ML research labs to build trusted, verifiable experime
 
 | Layer | Technology |
 |-------|-----------|
-| **Framework** | Next.js 16 (App Router, Turbopack) |
-| **Language** | TypeScript 5 |
-| **Auth** | NextAuth.js v5 (GitHub, Google, Credentials) |
-| **Database** | MySQL 8 via `mysql2` connection pool |
-| **Styling** | Vanilla CSS with custom properties |
-| **Charts** | Recharts |
-| **Animations** | Framer Motion |
-| **Icons** | Lucide React |
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript 5 |
+| Auth | NextAuth.js v5 (GitHub, Google, Credentials) |
+| Database | MySQL 8 via `mysql2` connection pool |
+| Styling | Vanilla CSS with custom properties |
+| Charts | Recharts |
+| Animations | Framer Motion |
+| Icons | Lucide React |
 
 ---
 
@@ -90,10 +54,10 @@ A full-stack platform for ML research labs to build trusted, verifiable experime
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
-- **MySQL** 8.x (optional — app works in demo mode without a database)
+- Node.js 18 or higher
+- MySQL 8.x (optional — the app runs in demo mode without a database)
 
-### 1. Clone & Install
+### 1. Clone and Install
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/synapsedb.git
@@ -102,8 +66,6 @@ npm install
 ```
 
 ### 2. Environment Variables
-
-Copy the example environment file and fill in your values:
 
 ```bash
 cp .env.example .env.local
@@ -127,7 +89,7 @@ GOOGLE_ID=your_google_client_id
 GOOGLE_SECRET=your_google_client_secret
 ```
 
-### 3. Run Development Server
+### 3. Start the Development Server
 
 ```bash
 npm run dev
@@ -135,15 +97,15 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-### 4. (Optional) Set Up MySQL
+### 4. Database Setup (Optional)
 
-If you want to use a real database instead of demo mode:
+To use a real database instead of demo mode, create the database and tables:
 
 ```sql
 CREATE DATABASE ai_provenance_db;
 ```
 
-Then create the required tables (`experiments`, `researchers`, `datasets`, `hardwareconfigs`, `codecommits`, `results`, `auditlog`) matching the schema used by the API routes.
+Then create the required tables — `experiments`, `researchers`, `datasets`, `hardwareconfigs`, `codecommits`, `results`, and `auditlog` — matching the schema used by the API routes.
 
 ---
 
@@ -154,7 +116,7 @@ synapsedb/
 ├── app/
 │   ├── api/                    # API routes (auth-aware, demo fallback)
 │   │   ├── auth/[...nextauth]/ # NextAuth handler
-│   │   ├── dashboard/          # Dashboard KPIs & charts
+│   │   ├── dashboard/          # Dashboard KPIs and charts
 │   │   ├── experiments/        # Experiment CRUD
 │   │   ├── datasets/           # Dataset usage stats
 │   │   ├── hardware/           # GPU telemetry
@@ -165,7 +127,7 @@ synapsedb/
 │   ├── auth/signin/            # Sign-in page
 │   ├── dashboard/              # Main dashboard
 │   ├── experiments/            # Experiments list
-│   ├── experiment/[id]/        # Experiment detail + provenance
+│   ├── experiment/[id]/        # Experiment detail and provenance
 │   ├── hardware/               # Hardware telemetry
 │   ├── datasets/               # Dataset usage
 │   ├── log/                    # Log new experiment form
@@ -208,43 +170,40 @@ synapsedb/
 └──────────────┘
 ```
 
-- **Authenticated users** → real MySQL queries, full CRUD access
-- **Unauthenticated users** → static demo data (30 experiments), read-only
-- **Log Run page** → requires authentication (write operations need audit trail)
+- **Authenticated users** — real MySQL queries, full CRUD access
+- **Unauthenticated users** — static demo data (30 experiments), read-only
+- **Log Run page** — requires authentication (write operations need audit trail)
 
 ---
 
 ## Demo Mode
 
-When no user is signed in, clicking "Launch Dashboard" shows a toast notification:
+When no user is signed in, clicking "Launch Dashboard" loads the app with:
 
-> ⚠️ **Not signed in** — Launching demo mode with sample data…
-
-The app then loads with:
 - 30 pre-built experiments across 10 researchers
 - Full KPI metrics, charts, and tables
-- A persistent yellow "Demo Mode" banner with a sign-in link
-- All navigation works identically to the live version
+- A persistent "Demo Mode" banner with a sign-in link
+- All navigation working identically to the live version
 
 ---
 
-## API Routes
+## API Reference
 
-All API routes are **auth-aware** with automatic demo fallback:
+All API routes are auth-aware with automatic demo fallback.
 
 | Route | Method | Auth Required | Description |
 |-------|--------|:---:|-------------|
-| `/api/dashboard` | GET | ❌ | Dashboard KPIs, charts, activity |
-| `/api/experiments` | GET | ❌ | Full experiment list |
-| `/api/experiments/[id]` | GET | ❌ | Single experiment + metrics |
-| `/api/datasets` | GET | ❌ | Dataset usage statistics |
-| `/api/hardware` | GET | ❌ | GPU telemetry & assignments |
-| `/api/auditlog` | GET | ❌ | Audit trail entries |
-| `/api/researchers` | GET | ❌ | Researcher directory |
-| `/api/codecommits` | GET | ❌ | Code commit references |
-| `/api/log` | POST | ✅ | Log new experiment (ACID) |
+| `/api/dashboard` | GET | No | Dashboard KPIs, charts, activity |
+| `/api/experiments` | GET | No | Full experiment list |
+| `/api/experiments/[id]` | GET | No | Single experiment and metrics |
+| `/api/datasets` | GET | No | Dataset usage statistics |
+| `/api/hardware` | GET | No | GPU telemetry and assignments |
+| `/api/auditlog` | GET | No | Audit trail entries |
+| `/api/researchers` | GET | No | Researcher directory |
+| `/api/codecommits` | GET | No | Code commit references |
+| `/api/log` | POST | Yes | Log new experiment (ACID) |
 
-> Routes marked ❌ return **demo data** when unauthenticated, or **real DB data** when signed in.
+Routes without required auth return demo data when unauthenticated, or real database data when signed in.
 
 ---
 
@@ -260,20 +219,11 @@ codecommits ──┤                    ▼
 hardwareconfigs┘               auditlog
 ```
 
-Key DBMS concepts demonstrated:
+Key concepts demonstrated:
+
 - **ACID Transactions** — atomic writes across 3 tables
 - **Foreign Key Constraints** — referential integrity
 - **Aggregate Queries** — KPI computation with `COUNT`, `AVG`, `GROUP BY`
 - **Audit Logging** — immutable append-only log table
 
 ---
-
-## License
-
-MIT © 2026
-
----
-
-<div align="center">
-  <sub>Built with Next.js, TypeScript, and MySQL</sub>
-</div>
