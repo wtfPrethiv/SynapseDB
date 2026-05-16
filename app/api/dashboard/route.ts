@@ -1,33 +1,40 @@
 import { NextResponse } from "next/server";
-import pool from "../../lib/db";
-import { RowDataPacket } from "mysql2";
+import { auth } from "@/auth";
+import { getDemoDashboard } from "../../lib/demoData";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const session = await auth();
+  const url = new URL(req.url);
+  const isDemo = !session || url.searchParams.get("demo") === "true";
+
+  if (isDemo) {
+    return NextResponse.json(getDemoDashboard());
+  }
+
+  // Authenticated — query real database
   try {
-    // KPI: total experiments
-    const [[{ totalExperiments }]] = await pool.query<RowDataPacket[]>(
+    const pool = (await import("../../lib/db")).default;
+    const { RowDataPacket } = await import("mysql2");
+
+    const [[{ totalExperiments }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       "SELECT COUNT(*) AS totalExperiments FROM experiments"
     );
 
-    // KPI: active researchers (those with at least one experiment)
-    const [[{ activeResearchers }]] = await pool.query<RowDataPacket[]>(
+    const [[{ activeResearchers }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       "SELECT COUNT(DISTINCT researcher_id) AS activeResearchers FROM experiments"
     );
 
-    // KPI: SOTA models (accuracy > 0.9)
-    const [[{ sotaModels }]] = await pool.query<RowDataPacket[]>(
+    const [[{ sotaModels }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       `SELECT COUNT(DISTINCT experiment_id) AS sotaModels
        FROM results
        WHERE metric_name = 'accuracy' AND metric_value > 0.9`
     );
 
-    // KPI: missing seeds (random_seed = 0)
-    const [[{ missingSeeds }]] = await pool.query<RowDataPacket[]>(
+    const [[{ missingSeeds }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       "SELECT COUNT(*) AS missingSeeds FROM experiments WHERE random_seed = 0"
     );
 
-    // Recent activity — last 5 experiments (one row per experiment, no duplicates)
-    const [recentActivity] = await pool.query<RowDataPacket[]>(`
+    const [recentActivity] = await pool.query<import("mysql2").RowDataPacket[]>(`
       SELECT
         e.experiment_id,
         e.experiment_name,
@@ -44,8 +51,7 @@ export async function GET() {
       LIMIT 5
     `);
 
-    // Performance metrics for line chart
-    const [performanceMetrics] = await pool.query<RowDataPacket[]>(`
+    const [performanceMetrics] = await pool.query<import("mysql2").RowDataPacket[]>(`
       SELECT
         e.experiment_id,
         e.experiment_name,
@@ -59,8 +65,7 @@ export async function GET() {
       LIMIT 10
     `);
 
-    // Hardware distribution for bar chart
-    const [hardwareStats] = await pool.query<RowDataPacket[]>(`
+    const [hardwareStats] = await pool.query<import("mysql2").RowDataPacket[]>(`
       SELECT
         h.gpu_type,
         COUNT(e.experiment_id) AS count
@@ -70,25 +75,19 @@ export async function GET() {
       ORDER BY count DESC
     `);
 
-    // Aggregate counts for bottom summary
-    const [[{ completedCount }]] = await pool.query<RowDataPacket[]>(
+    const [[{ completedCount }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       "SELECT COUNT(*) AS completedCount FROM experiments WHERE status = 'Completed'"
     );
-    const [[{ failedCount }]] = await pool.query<RowDataPacket[]>(
+    const [[{ failedCount }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       "SELECT COUNT(*) AS failedCount FROM experiments WHERE status = 'Failed'"
     );
-    const [[{ avgAccuracy }]] = await pool.query<RowDataPacket[]>(
+    const [[{ avgAccuracy }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       `SELECT AVG(metric_value) AS avgAccuracy
        FROM results WHERE metric_name = 'accuracy' AND metric_value > 0`
     );
 
     return NextResponse.json({
-      kpi: {
-        totalExperiments,
-        activeResearchers,
-        sotaModels,
-        missingSeeds,
-      },
+      kpi: { totalExperiments, activeResearchers, sotaModels, missingSeeds },
       recentActivity,
       performanceMetrics,
       hardwareStats,
@@ -100,6 +99,7 @@ export async function GET() {
     });
   } catch (err) {
     console.error("[/api/dashboard] DB error:", err);
-    return NextResponse.json({ error: "Database error" }, { status: 500 });
+    // Fallback to demo data if DB is unavailable
+    return NextResponse.json(getDemoDashboard());
   }
 }

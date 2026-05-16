@@ -43,3 +43,6 @@ next-env.d.ts
 # AI agents
 AGENTS.md
 CLAUDE.md
+
+# SQL seed files
+*.sql

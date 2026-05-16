@@ -1,16 +1,26 @@
 import { NextResponse } from "next/server";
-import pool from "../../../lib/db";
-import { RowDataPacket } from "mysql2";
+import { auth } from "@/auth";
+import { getDemoExperimentDetail } from "../../../lib/demoData";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const session = await auth();
+  const url = new URL(req.url);
+  const isDemo = !session || url.searchParams.get("demo") === "true";
+
+  if (isDemo) {
+    const data = getDemoExperimentDetail(Number(id));
+    if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(data);
+  }
 
   try {
-    // Main experiment detail with JOINs
-    const [rows] = await pool.query<RowDataPacket[]>(
+    const pool = (await import("../../../lib/db")).default;
+
+    const [rows] = await pool.query<import("mysql2").RowDataPacket[]>(
       `SELECT
         e.experiment_id,
         e.experiment_name,
@@ -38,8 +48,7 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // All metrics for this experiment
-    const [metrics] = await pool.query<RowDataPacket[]>(
+    const [metrics] = await pool.query<import("mysql2").RowDataPacket[]>(
       `SELECT result_id, metric_name, metric_value
        FROM results
        WHERE experiment_id = ?`,
@@ -49,6 +58,8 @@ export async function GET(
     return NextResponse.json({ experiment: rows[0], metrics });
   } catch (err) {
     console.error(`[/api/experiments/${id}] DB error:`, err);
-    return NextResponse.json({ error: "Database error" }, { status: 500 });
+    const data = getDemoExperimentDetail(Number(id));
+    if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(data);
   }
 }

@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Navbar from "../components/Navbar";
+import DemoBanner from "../components/DemoBanner";
 import HardwareChart from "../components/charts/HardwareChart";
 import { Cpu, Loader2 } from "lucide-react";
 
@@ -27,9 +30,15 @@ export default function HardwarePage() {
   const [stats, setStats] = useState<HardwareStat[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const demoParam = searchParams.get("demo") === "true";
+  const isDemo = demoParam || status === "unauthenticated";
 
   useEffect(() => {
-    fetch("/api/hardware")
+    if (status === "loading" && !demoParam) return;
+    const url = isDemo ? "/api/hardware?demo=true" : "/api/hardware";
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
         setStats(data.stats ?? []);
@@ -37,7 +46,7 @@ export default function HardwarePage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [status, isDemo, demoParam]);
 
   const totalExperiments = stats.reduce((sum, h) => sum + Number(h.experiment_count), 0);
 
@@ -45,6 +54,7 @@ export default function HardwarePage() {
     <div className="app-layout">
       <Navbar />
       <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "3rem" }}>
+        {isDemo && <DemoBanner />}
         <motion.div
           className="page-header"
           initial={{ opacity: 0, y: 16 }}
@@ -52,7 +62,7 @@ export default function HardwarePage() {
           transition={{ duration: 0.5 }}
         >
           <div className="breadcrumb">
-            <Link href="/dashboard">nexus</Link>
+            <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
             <span>hardware</span>
           </div>

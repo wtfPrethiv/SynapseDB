@@ -3,7 +3,10 @@
 import { useState, useEffect, use } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Navbar from "../../components/Navbar";
+import DemoBanner from "../../components/DemoBanner";
 import ProvenanceGraph from "../../components/ProvenanceGraph";
 import { Clock, Cpu, Hash, Activity, ArrowLeft, CheckCircle, XCircle, Timer, AlertCircle, Loader2 } from "lucide-react";
 
@@ -55,11 +58,17 @@ export default function ExperimentDetailPage({ params }: { params: Promise<{ id:
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const demoParam = searchParams.get("demo") === "true";
+  const isDemo = demoParam || status === "unauthenticated";
 
   useEffect(() => {
+    if (status === "loading" && !demoParam) return;
+    const demoSuffix = isDemo ? "?demo=true" : "";
     Promise.all([
-      fetch(`/api/experiments/${id}`).then((r) => r.json()),
-      fetch("/api/auditlog").then((r) => r.json()),
+      fetch(`/api/experiments/${id}${demoSuffix}`).then((r) => r.json()),
+      fetch(`/api/auditlog${demoSuffix}`).then((r) => r.json()),
     ]).then(([expData, auditData]) => {
       if (expData.error === "Not found") { setNotFound(true); setLoading(false); return; }
       setExp(expData.experiment);
@@ -67,7 +76,7 @@ export default function ExperimentDetailPage({ params }: { params: Promise<{ id:
       setAuditLog(Array.isArray(auditData) ? auditData.slice(0, 6) : []);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [id]);
+  }, [id, status, isDemo, demoParam]);
 
   if (loading) {
     return (
@@ -117,6 +126,8 @@ export default function ExperimentDetailPage({ params }: { params: Promise<{ id:
       <Navbar />
       <div className="container" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
 
+        {isDemo && <DemoBanner />}
+
         {/* Back link */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -135,9 +146,9 @@ export default function ExperimentDetailPage({ params }: { params: Promise<{ id:
             <ArrowLeft size={12} /> Back to Experiments
           </Link>
           <div className="breadcrumb">
-            <Link href="/dashboard">nexus</Link>
+            <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
-            <Link href="/experiments">experiments</Link>
+            <Link href={isDemo ? "/experiments?demo=true" : "/experiments"}>experiments</Link>
             <span className="breadcrumb-sep">/</span>
             <span>EXP-{String(exp.experiment_id).padStart(3, "0")}</span>
           </div>

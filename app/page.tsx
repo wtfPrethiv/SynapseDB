@@ -4,6 +4,8 @@ import "./homepage.css";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Preloader from "./components/Preloader";
 import {
   GitBranch,
@@ -15,6 +17,7 @@ import {
   Cpu,
   BarChart3,
   ChevronRight,
+  Info,
 } from "lucide-react";
 
 const fadeUp = {
@@ -37,17 +40,33 @@ const features = [
 
 const steps = [
   { step: "01", title: "Log a Run", desc: "Fill in the experiment parameters: dataset version, commit hash, hardware, and initial metrics." },
-  { step: "02", title: "ACID Transaction", desc: "NEXUS writes to all tables atomically. Any failure triggers a complete rollback." },
+  { step: "02", title: "ACID Transaction", desc: "SynapseDB writes to all tables atomically. Any failure triggers a complete rollback." },
   { step: "03", title: "Provenance DAG", desc: "An immutable lineage graph is constructed linking every upstream dependency." },
   { step: "04", title: "Verify & Audit", desc: "Any researcher can replay the exact experiment using the stored configuration snapshot." },
 ];
 
 export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
+  const [showDemoToast, setShowDemoToast] = useState(false);
+  const { data: session } = useSession();
+  const router = useRouter();
 
   const handlePreloaderComplete = useCallback(() => {
     setLoaded(true);
   }, []);
+
+  const handleLaunchDashboard = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (session) {
+      router.push("/dashboard");
+    } else {
+      setShowDemoToast(true);
+      setTimeout(() => {
+        router.push("/dashboard?demo=true");
+      }, 1800);
+      setTimeout(() => setShowDemoToast(false), 4000);
+    }
+  };
 
   return (
     <>
@@ -73,31 +92,21 @@ export default function HomePage() {
             >
               <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "100%", width: "100%", maxWidth: "1320px", margin: "0 auto", padding: "0 2rem" }}>
                 <Link href="/" className="navbar-logo">
-                  <span className="logo-mark">N</span>
-                  <span className="logo-text">NEXUS</span>
+                  <span className="logo-text">SynapseDB</span>
                 </Link>
 
                 <nav style={{ display: "flex", gap: "0.15rem", alignItems: "center" }}>
-                  {[
-                    { href: "/dashboard", label: "Dashboard" },
-                    { href: "/experiments", label: "Experiments" },
-                    { href: "/hardware", label: "Hardware" },
-                    { href: "/datasets", label: "Datasets" },
-                  ].map((l) => (
-                    <Link key={l.href} href={l.href} className="nav-link">
-                      {l.label}
-                    </Link>
-                  ))}
+                  {/* Nav links removed per user request */}
                 </nav>
 
                 <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
-                  <Link href="/dashboard" className="btn-hero-secondary" style={{ padding: "0.45rem 1rem", fontSize: "0.8rem" }}>
+                  <Link href="/auth/signin" className="btn-hero-secondary" style={{ padding: "0.45rem 1rem", fontSize: "0.8rem" }}>
                     Sign in
                   </Link>
-                  <Link href="/dashboard" className="btn-hero-primary" style={{ padding: "0.45rem 1rem", fontSize: "0.8rem" }}>
+                  <button onClick={handleLaunchDashboard} className="btn-hero-primary" style={{ padding: "0.45rem 1rem", fontSize: "0.8rem" }}>
                     Launch Dashboard
                     <ArrowRight size={13} />
-                  </Link>
+                  </button>
                 </div>
               </div>
             </motion.header>
@@ -120,19 +129,19 @@ export default function HomePage() {
                 </motion.h1>
 
                 <motion.p className="hero-desc" custom={2} variants={fadeUp} initial="hidden" animate="visible">
-                  NEXUS is a strict audit trail for machine learning labs. Link every model to the exact
+                  SynapseDB is a strict audit trail for machine learning labs. Link every model to the exact
                   dataset, code commit, and GPU config — and prevent benchmark tampering forever.
                 </motion.p>
 
                 <motion.div className="hero-actions" custom={3} variants={fadeUp} initial="hidden" animate="visible">
-                  <Link href="/dashboard" className="btn-hero-primary">
+                  <button onClick={handleLaunchDashboard} className="btn-hero-primary">
                     <FlaskConical size={15} />
                     Enter the Lab
-                  </Link>
-                  <Link href="/experiments" className="btn-hero-secondary">
+                  </button>
+                  <button onClick={handleLaunchDashboard} className="btn-hero-secondary">
                     Browse Experiments
                     <ChevronRight size={14} />
-                  </Link>
+                  </button>
                 </motion.div>
 
                 <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible">
@@ -167,7 +176,7 @@ export default function HomePage() {
                     <span style={{ color: "var(--ink-4)" }}>tracked.</span>
                   </h2>
                   <p className="features-desc">
-                    From dataset versioning to GPU telemetry, NEXUS captures the full provenance
+                    From dataset versioning to GPU telemetry, SynapseDB captures the full provenance
                     chain so you can reproduce any result, any time.
                   </p>
                 </motion.div>
@@ -244,15 +253,15 @@ export default function HomePage() {
                     <span style={{ color: "var(--ink-4)" }}>reproducible?</span>
                   </h2>
                   <p className="cta-desc">
-                    Join 38 researchers already using NEXUS to build trusted, verifiable ML pipelines.
+                    Join 38 researchers already using SynapseDB to build trusted, verifiable ML pipelines.
                   </p>
                   <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
-                    <Link href="/dashboard" className="btn-hero-primary">
+                    <button onClick={handleLaunchDashboard} className="btn-hero-primary">
                       <BarChart3 size={15} />
                       Launch Dashboard
-                    </Link>
-                    <Link href="/log" className="btn-hero-secondary">
-                      Log Your First Run
+                    </button>
+                    <Link href="/auth/signin" className="btn-hero-secondary">
+                      Sign In
                       <ChevronRight size={14} />
                     </Link>
                   </div>
@@ -264,8 +273,7 @@ export default function HomePage() {
             <footer className="site-footer">
               <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
                 <Link href="/" className="navbar-logo">
-                  <span className="logo-mark">N</span>
-                  <span className="logo-text">NEXUS</span>
+                  <span className="logo-text">SynapseDB</span>
                 </Link>
                 <p style={{ fontSize: "0.72rem", color: "var(--ink-4)", fontFamily: "var(--font-mono)" }}>
                   AI Provenance &amp; Reproducibility Tracker
@@ -273,8 +281,7 @@ export default function HomePage() {
                 <div style={{ display: "flex", gap: "1.5rem" }}>
                   {[
                     { label: "Dashboard", href: "/dashboard" },
-                    { label: "Experiments", href: "/experiments" },
-                    { label: "Log Run", href: "/log" },
+                    { label: "Sign In", href: "/auth/signin" },
                   ].map((l) => (
                     <Link key={l.label} href={l.href} style={{ fontSize: "0.78rem", color: "var(--ink-4)" }}>
                       {l.label}
@@ -283,6 +290,27 @@ export default function HomePage() {
                 </div>
               </div>
             </footer>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Demo mode toast */}
+      <AnimatePresence>
+        {showDemoToast && (
+          <motion.div
+            className="toast-wrap"
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.96 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="toast" style={{ borderColor: "var(--warning-border)", background: "var(--warning-bg)" }}>
+              <div className="toast-icon" style={{ color: "var(--warning)" }}><Info size={14} /></div>
+              <div>
+                <div className="toast-title" style={{ color: "var(--warning)" }}>Not signed in</div>
+                <div className="toast-subtitle">Launching demo mode with sample data…</div>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

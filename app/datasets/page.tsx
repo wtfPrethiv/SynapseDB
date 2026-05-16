@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Navbar from "../components/Navbar";
+import DemoBanner from "../components/DemoBanner";
 import { Database, BarChart3, Tag, Loader2 } from "lucide-react";
 
 interface Dataset {
@@ -26,9 +29,15 @@ export default function DatasetsPage() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [usageByExperiment, setUsageByExperiment] = useState<UsageRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const demoParam = searchParams.get("demo") === "true";
+  const isDemo = demoParam || status === "unauthenticated";
 
   useEffect(() => {
-    fetch("/api/datasets")
+    if (status === "loading" && !demoParam) return;
+    const url = isDemo ? "/api/datasets?demo=true" : "/api/datasets";
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
         setDatasets(data.datasets ?? []);
@@ -36,7 +45,7 @@ export default function DatasetsPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [status, isDemo, demoParam]);
 
   const maxUsage = Math.max(...datasets.map((d) => Number(d.usage_count)), 1);
   const colors = ["#6366f1", "#22d3ee", "#10b981", "#f59e0b", "#f43f5e"];
@@ -45,6 +54,7 @@ export default function DatasetsPage() {
     <div className="app-layout">
       <Navbar />
       <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "3rem" }}>
+        {isDemo && <DemoBanner />}
         <motion.div
           className="page-header"
           initial={{ opacity: 0, y: 16 }}
@@ -52,7 +62,7 @@ export default function DatasetsPage() {
           transition={{ duration: 0.5 }}
         >
           <div className="breadcrumb">
-            <Link href="/dashboard">nexus</Link>
+            <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
             <span>datasets</span>
           </div>

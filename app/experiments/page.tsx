@@ -3,8 +3,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Navbar from "../components/Navbar";
+import DemoBanner from "../components/DemoBanner";
 import { Search, ExternalLink, Filter, Loader2 } from "lucide-react";
 
 interface Experiment {
@@ -27,6 +29,10 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function ExperimentsPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const demoParam = searchParams.get("demo") === "true";
+  const isDemo = demoParam || status === "unauthenticated";
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -35,11 +41,13 @@ export default function ExperimentsPage() {
   const [datasetFilter, setDatasetFilter] = useState("All");
 
   useEffect(() => {
-    fetch("/api/experiments")
+    if (status === "loading" && !demoParam) return;
+    const url = isDemo ? "/api/experiments?demo=true" : "/api/experiments";
+    fetch(url)
       .then((r) => r.json())
       .then((data) => { setExperiments(data); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
-  }, []);
+  }, [status, isDemo, demoParam]);
 
   const uniqueDatasets = useMemo(
     () => [...new Set(experiments.map((e) => e.dataset_name))],
@@ -65,6 +73,8 @@ export default function ExperimentsPage() {
       <Navbar />
       <div className="container" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
 
+        {isDemo && <DemoBanner />}
+
         <motion.div
           className="page-header"
           initial={{ opacity: 0, y: 12 }}
@@ -72,7 +82,7 @@ export default function ExperimentsPage() {
           transition={{ duration: 0.4 }}
         >
           <div className="breadcrumb">
-            <Link href="/dashboard">nexus</Link>
+            <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
             <span>experiments</span>
           </div>
@@ -174,7 +184,7 @@ export default function ExperimentsPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.03, duration: 0.25 }}
-                    onClick={() => router.push(`/experiment/${exp.experiment_id}`)}
+                    onClick={() => router.push(`/experiment/${exp.experiment_id}${isDemo ? '?demo=true' : ''}`)}
                     style={{ cursor: "pointer" }}
                   >
                     <td><span className="exp-id">EXP-{String(exp.experiment_id).padStart(3, "0")}</span></td>
@@ -206,7 +216,7 @@ export default function ExperimentsPage() {
                     <td><StatusBadge status={exp.status} /></td>
                     <td>
                       <Link
-                        href={`/experiment/${exp.experiment_id}`}
+                        href={`/experiment/${exp.experiment_id}${isDemo ? '?demo=true' : ''}`}
                         onClick={(ev) => ev.stopPropagation()}
                         style={{ color: "var(--ink-4)", display: "flex" }}
                       >

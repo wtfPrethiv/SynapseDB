@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import Navbar from "../components/Navbar";
-import { FlaskConical, Database, GitCommit, Cpu, Hash, Target, CheckCircle, Info, User, Loader2 } from "lucide-react";
+import { FlaskConical, Database, GitCommit, Cpu, Hash, Target, CheckCircle, Info, User, Loader2, Lock } from "lucide-react";
 
 interface Researcher { researcher_id: number; name: string; email: string; institution: string; }
 interface Dataset { dataset_id: number; dataset_name: string; version_tag: string; }
@@ -12,6 +13,7 @@ interface Hardware { hardware_id: number; gpu_type: string; cuda_version: string
 interface Commit { commit_id: number; commit_hash: string; branch: string; }
 
 export default function LogRunPage() {
+  const { data: session } = useSession();
   const [researchers, setResearchers] = useState<Researcher[]>([]);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [hardware, setHardware] = useState<Hardware[]>([]);
@@ -34,6 +36,7 @@ export default function LogRunPage() {
 
   // Load dropdown data on mount
   useEffect(() => {
+    if (!session) { setLoadingDropdowns(false); return; }
     Promise.all([
       fetch("/api/researchers").then((r) => r.json()),
       fetch("/api/datasets").then((r) => r.json()),
@@ -46,7 +49,7 @@ export default function LogRunPage() {
       setCommits(cc ?? []);
       setLoadingDropdowns(false);
     }).catch(() => setLoadingDropdowns(false));
-  }, []);
+  }, [session]);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -118,7 +121,7 @@ export default function LogRunPage() {
           transition={{ duration: 0.4 }}
         >
           <div className="breadcrumb">
-            <Link href="/dashboard">nexus</Link>
+            <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
             <span>log-run</span>
           </div>
@@ -128,7 +131,37 @@ export default function LogRunPage() {
           </p>
         </motion.div>
 
+        {/* Auth gate */}
+        {!session && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem",
+              padding: "3rem 1.5rem", textAlign: "center",
+              background: "var(--surface)", border: "1px solid var(--border)",
+              borderRadius: "var(--radius-xl)", marginBottom: "2rem",
+            }}
+          >
+            <Lock size={28} color="var(--ink-4)" />
+            <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--ink)" }}>
+              Authentication Required
+            </div>
+            <p style={{ fontSize: "0.82rem", color: "var(--ink-3)", maxWidth: "380px", lineHeight: 1.6 }}>
+              You must be signed in to log new experiments. This ensures audit trail integrity.
+            </p>
+            <Link
+              href="/auth/signin"
+              className="btn btn-primary"
+              style={{ marginTop: "0.5rem" }}
+            >
+              Sign In to Continue
+            </Link>
+          </motion.div>
+        )}
+
         {/* Info banner */}
+        {session && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -366,6 +399,7 @@ INSERT INTO auditlog (action_type, table_name, description)
 COMMIT; -- Rollback on any failure`}
           </pre>
         </motion.div>
+        )}
       </div>
 
       {/* Toast */}

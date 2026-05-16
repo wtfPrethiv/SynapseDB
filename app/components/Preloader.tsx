@@ -51,8 +51,8 @@ export default function Preloader({ onComplete }: PreloaderProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <span className="preloader-logo">NEXUS</span>
-            <span className="preloader-sub">AI Research Platform</span>
+            <span className="preloader-logo">SynapseDB</span>
+            <span className="preloader-sub">AI Provenance Platform</span>
           </motion.div>
 
           {/* Counter */}

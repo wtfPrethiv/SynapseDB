@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Navbar from "../components/Navbar";
+import DemoBanner from "../components/DemoBanner";
 import PerformanceChart from "../components/charts/PerformanceChart";
 import HardwareChart from "../components/charts/HardwareChart";
 import { FlaskConical, Users, Trophy, AlertTriangle, ArrowRight, Clock, Cpu, Loader2 } from "lucide-react";
@@ -43,13 +46,19 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const demoParam = searchParams.get("demo") === "true";
+  const isDemo = demoParam || status === "unauthenticated";
 
   useEffect(() => {
-    fetch("/api/dashboard")
+    if (status === "loading" && !demoParam) return;
+    const url = isDemo ? "/api/dashboard?demo=true" : "/api/dashboard";
+    fetch(url)
       .then((r) => r.json())
       .then((d) => { setData(d); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
-  }, []);
+  }, [status, isDemo, demoParam]);
 
   if (loading) {
     return (
@@ -87,6 +96,9 @@ export default function DashboardPage() {
       <Navbar />
       <div className="container" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
 
+        {/* Demo banner */}
+        {isDemo && <DemoBanner />}
+
         {/* Page header */}
         <motion.div
           className="page-header"
@@ -95,7 +107,7 @@ export default function DashboardPage() {
           transition={{ duration: 0.4 }}
         >
           <div className="breadcrumb">
-            <span>nexus</span>
+            <span>synapsedb</span>
             <span className="breadcrumb-sep">/</span>
             <span>dashboard</span>
           </div>
@@ -149,7 +161,7 @@ export default function DashboardPage() {
               <p className="section-sub">5 most recently logged runs</p>
             </div>
             <Link
-              href="/experiments"
+              href={isDemo ? "/experiments?demo=true" : "/experiments"}
               style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.78rem", color: "var(--ink-3)", textDecoration: "none" }}
             >
               View all <ArrowRight size={13} />
@@ -172,7 +184,7 @@ export default function DashboardPage() {
                   <tr
                     key={exp.experiment_id}
                     style={{ cursor: "pointer" }}
-                    onClick={() => { window.location.href = `/experiment/${exp.experiment_id}`; }}
+                    onClick={() => { window.location.href = `/experiment/${exp.experiment_id}${isDemo ? "?demo=true" : ""}`; }}
                   >
                     <td>
                       <div className="exp-name">{exp.experiment_name}</div>

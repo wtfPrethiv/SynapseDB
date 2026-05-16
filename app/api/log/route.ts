@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import pool from "../../lib/db";
 import { ResultSetHeader } from "mysql2";
 
 export async function POST(req: Request) {
+  const session = await auth();
+
+  if (!session) {
+    return NextResponse.json(
+      { error: "Authentication required. Sign in to log experiments." },
+      { status: 401 }
+    );
+  }
+
   let body: {
     experimentName: string;
     researcherId: number;
@@ -47,7 +57,7 @@ export async function POST(req: Request) {
     await conn.query(
       `INSERT INTO auditlog (action_type, table_name, description)
        VALUES ('INSERT', 'experiments', ?)`,
-      [`New experiment #${newExperimentId} "${experimentName}" logged via dashboard`]
+      [`New experiment #${newExperimentId} "${experimentName}" logged via dashboard by ${session.user?.name || session.user?.email}`]
     );
 
     await conn.commit();
