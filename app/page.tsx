@@ -116,12 +116,7 @@ export default function HomePage() {
               <div className="hero-grid-bg" />
               <div className="container" style={{ position: "relative" }}>
 
-                <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
-                  <span className="hero-eyebrow">
-                    <span className="hero-eyebrow-dot" />
-                    Solving the ML Reproducibility Crisis
-                  </span>
-                </motion.div>
+
 
                 <motion.h1 className="hero-title" custom={1} variants={fadeUp} initial="hidden" animate="visible">
                   Your AI experiments,{" "}
