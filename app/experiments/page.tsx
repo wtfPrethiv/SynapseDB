@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -71,16 +70,11 @@ export default function ExperimentsPage() {
   return (
     <div className="app-layout">
       <Navbar />
-      <div className="container" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
+      <div className="container page-enter" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
 
         {isDemo && <DemoBanner />}
 
-        <motion.div
-          className="page-header"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
+        <div className="page-header">
           <div className="breadcrumb">
             <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
@@ -90,15 +84,10 @@ export default function ExperimentsPage() {
           <p className="page-sub">
             {loading ? "Loading…" : `${experiments.length} total experiments — complete historical record of all ML runs.`}
           </p>
-        </motion.div>
+        </div>
 
         {/* Filter bar */}
-        <motion.div
-          className="filter-bar mb-6"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.1 }}
-        >
+        <div className="filter-bar mb-6">
           <div className="search-wrap">
             <Search size={13} className="search-icon" />
             <input
@@ -142,7 +131,7 @@ export default function ExperimentsPage() {
           <span style={{ marginLeft: "auto", fontSize: "0.72rem", color: "var(--ink-4)", fontFamily: "var(--font-mono)" }}>
             {loading ? "…" : `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`}
           </span>
-        </motion.div>
+        </div>
 
         {/* Loading / error states */}
         {loading && (
@@ -158,12 +147,7 @@ export default function ExperimentsPage() {
 
         {/* Table */}
         {!loading && !error && (
-          <motion.div
-            className="data-table-wrap"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.15 }}
-          >
+          <div className="data-table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
@@ -178,12 +162,9 @@ export default function ExperimentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((exp, i) => (
-                  <motion.tr
+                {filtered.map((exp) => (
+                  <tr
                     key={exp.experiment_id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.03, duration: 0.25 }}
                     onClick={() => router.push(`/experiment/${exp.experiment_id}${isDemo ? '?demo=true' : ''}`)}
                     style={{ cursor: "pointer" }}
                   >
@@ -223,7 +204,7 @@ export default function ExperimentsPage() {
                         <ExternalLink size={13} />
                       </Link>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -233,17 +214,12 @@ export default function ExperimentsPage() {
                 No experiments match your filters.
               </div>
             )}
-          </motion.div>
+          </div>
         )}
 
         {/* Summary badges */}
         {!loading && !error && (
-          <motion.div
-            style={{ marginTop: "1.25rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
             {(["Completed", "Running", "Failed", "Pending"] as const).map((s) => {
               const count = experiments.filter((e) => e.status === s).length;
               return (
@@ -257,7 +233,7 @@ export default function ExperimentsPage() {
                 </button>
               );
             })}
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

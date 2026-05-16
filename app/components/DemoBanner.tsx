@@ -1,15 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { FlaskConical, LogIn } from "lucide-react";
 
 export default function DemoBanner() {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
+    <div
+      className="page-enter"
       style={{
         display: "flex",
         alignItems: "center",
@@ -49,6 +46,6 @@ export default function DemoBanner() {
       >
         <LogIn size={11} /> Sign In
       </Link>
-    </motion.div>
+    </div>
   );
 }

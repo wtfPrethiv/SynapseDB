@@ -1,22 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 interface ProvenanceGraphProps {
   experimentName?: string;
   datasetTag?: string;
   codeCommit?: string;
   gpuType?: string;
 }
-
-const edgeV = {
-  hidden: { pathLength: 0, opacity: 0 },
-  visible: (i: number) => ({
-    pathLength: 1,
-    opacity: 1,
-    transition: { delay: 0.1 + i * 0.07, duration: 0.5, ease: "easeInOut" as const },
-  }),
-};
 
 const PAL = {
   indigo: "#5b6cf0",
@@ -68,7 +57,7 @@ export default function ProvenanceGraph({
   nodes.forEach(n => { nMap[n.id] = { cx: n.cx, cy: n.cy }; });
 
   return (
-    <div className="provenance-graph">
+    <div className="provenance-graph page-enter">
       <svg
         viewBox="0 0 820 420"
         width="100%"
@@ -83,7 +72,7 @@ export default function ProvenanceGraph({
         </defs>
 
         {/* ── Edges ── */}
-        {edgePairs.map(([fId, tId], i) => {
+        {edgePairs.map(([fId, tId]) => {
           const f = nMap[fId], t = nMap[tId];
           const x1 = f.cx + W / 2;
           const y1 = f.cy;
@@ -91,32 +80,25 @@ export default function ProvenanceGraph({
           const y2 = t.cy;
           const mx = (x1 + x2) / 2;
           return (
-            <motion.path
+            <path
               key={`${fId}-${tId}`}
               d={`M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`}
               stroke="#d0cfc8"
               strokeWidth="1.6"
               fill="none"
               markerEnd="url(#pg-arrow)"
-              custom={i}
-              variants={edgeV}
-              initial="hidden"
-              animate="visible"
             />
           );
         })}
 
-        {/* ── Nodes (plain <g> + CSS opacity transition — NO scale/translate conflict) ── */}
-        {nodes.map((node, i) => {
+        {/* ── Nodes ── */}
+        {nodes.map((node) => {
           const tx = node.cx - W / 2;
           const ty = node.cy - H / 2;
           return (
-            <motion.g
+            <g
               key={node.id}
               transform={`translate(${tx}, ${ty})`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: i * 0.08, duration: 0.4 }}
             >
               {/* Shadow */}
               <rect x={2} y={3} width={W} height={H} rx={8} fill="rgba(0,0,0,0.07)" />
@@ -144,7 +126,7 @@ export default function ProvenanceGraph({
                 fontSize="7.8" fontFamily="JetBrains Mono, monospace" fillOpacity="0.9">
                 {node.val2}
               </text>
-            </motion.g>
+            </g>
           );
         })}
       </svg>

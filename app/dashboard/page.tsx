@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -35,12 +34,6 @@ interface DashboardData {
   hardwareStats: Array<{ gpu_type: string; count: number }>;
   summary: { completedCount: number; failedCount: number; avgAccuracy: number };
 }
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } };
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] } },
-};
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -94,18 +87,13 @@ export default function DashboardPage() {
   return (
     <div className="app-layout">
       <Navbar />
-      <div className="container" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
+      <div className="container page-enter" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
 
         {/* Demo banner */}
         {isDemo && <DemoBanner />}
 
         {/* Page header */}
-        <motion.div
-          className="page-header"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
+        <div className="page-header">
           <div className="breadcrumb">
             <span>synapsedb</span>
             <span className="breadcrumb-sep">/</span>
@@ -113,17 +101,16 @@ export default function DashboardPage() {
           </div>
           <h1 className="page-title">Lab Overview</h1>
           <p className="page-sub">Real-time snapshot of experiment activity and system health.</p>
-        </motion.div>
+        </div>
 
         {/* KPI Cards */}
-        <motion.div className="grid-4 mb-8" variants={stagger} initial="hidden" animate="visible">
+        <div className="grid-4 mb-8">
           {kpis.map((kpi) => {
             const Icon = kpi.icon;
             return (
-              <motion.div
+              <div
                 key={kpi.label}
                 className={`kpi-card${kpi.warning ? " kpi-card--warning" : ""}`}
-                variants={fadeUp}
               >
                 <div className="kpi-icon" style={{ background: kpi.iconBg }}>
                   <Icon size={16} color="var(--ink-2)" />
@@ -133,28 +120,19 @@ export default function DashboardPage() {
                   <div className="kpi-value">{kpi.value}</div>
                   {kpi.sub && <div className="kpi-sub">{kpi.sub}</div>}
                 </div>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Charts */}
-        <motion.div
-          className="grid-2 mb-8"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.28 }}
-        >
+        <div className="grid-2 mb-8">
           <PerformanceChart data={performanceMetrics} />
           <HardwareChart data={hardwareStats} />
-        </motion.div>
+        </div>
 
         {/* Recent Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.38 }}
-        >
+        <div>
           <div className="section-header">
             <div>
               <h2 className="section-title">Recent Activity</h2>
@@ -217,15 +195,10 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
 
         {/* Bottom summary row */}
-        <motion.div
-          className="grid-3 mt-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-        >
+        <div className="grid-3 mt-4">
           {[
             { label: "Avg Accuracy", value: summary.avgAccuracy > 0 ? (summary.avgAccuracy * 100).toFixed(1) + "%" : "—", sub: "Across completed runs" },
             { label: "Completed", value: summary.completedCount, sub: "Successful runs" },
@@ -241,7 +214,7 @@ export default function DashboardPage() {
               <div style={{ fontSize: "0.7rem", color: "var(--ink-4)", marginTop: "0.15rem" }}>{s.sub}</div>
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );

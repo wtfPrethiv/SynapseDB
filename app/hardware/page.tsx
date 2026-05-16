@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -53,14 +52,9 @@ export default function HardwarePage() {
   return (
     <div className="app-layout">
       <Navbar />
-      <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "3rem" }}>
+      <div className="container page-enter" style={{ paddingTop: "2.5rem", paddingBottom: "3rem" }}>
         {isDemo && <DemoBanner />}
-        <motion.div
-          className="page-header"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="page-header">
           <div className="breadcrumb">
             <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
@@ -68,7 +62,7 @@ export default function HardwarePage() {
           </div>
           <h1 className="page-title">Hardware Registry</h1>
           <p className="page-sub">GPU inventory and experiment load distribution across all compute resources.</p>
-        </motion.div>
+        </div>
 
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: "4rem", color: "var(--ink-4)" }}>
@@ -77,11 +71,11 @@ export default function HardwarePage() {
         ) : (
           <>
             <div className="grid-2 mb-8">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <div>
                 <HardwareChart data={stats.map(h => ({ gpu_type: h.gpu_type, count: Number(h.experiment_count) }))} />
-              </motion.div>
+              </div>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+              <div>
                 <div className="data-table-wrap">
                   <table className="data-table">
                     <thead>
@@ -129,10 +123,10 @@ export default function HardwarePage() {
                     </tbody>
                   </table>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+            <div>
               <div className="section-header mb-4">
                 <div className="section-title">Recent Hardware Assignments</div>
               </div>
@@ -176,7 +170,7 @@ export default function HardwarePage() {
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </div>
           </>
         )}
       </div>

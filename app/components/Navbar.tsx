@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   FlaskConical,
@@ -32,28 +31,31 @@ export default function Navbar({ visible = true }: { visible?: boolean }) {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const demoSuffix = isDemo ? "?demo=true" : "";
 
+  /* ---------- find the active link's index for the CSS-driven indicator ---------- */
+  const activeIndex = navLinks.findIndex(
+    (link) => pathname === link.href || pathname.startsWith(link.href + "/")
+  );
+
   return (
-    <motion.nav
-      className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}
-      initial={{ y: -80, opacity: 0 }}
-      animate={visible ? { y: 0, opacity: 1 } : { y: -80, opacity: 0 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
+    <nav
+      className={`navbar navbar-enter ${scrolled ? "navbar--scrolled" : ""}`}
+      style={{ visibility: visible ? "visible" : "hidden" }}
     >
-      {/* Logo — text only, no mark */}
+      {/* Logo */}
       <Link href="/" className="navbar-logo">
         <span className="logo-text">SynapseDB</span>
       </Link>
 
       {/* Nav links */}
       <ul className="navbar-links">
-        {navLinks.map((link) => {
-          const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+        {navLinks.map((link, i) => {
+          const isActive = i === activeIndex;
           const Icon = link.icon;
           return (
             <li key={link.href}>
@@ -61,13 +63,7 @@ export default function Navbar({ visible = true }: { visible?: boolean }) {
                 href={`${link.href}${demoSuffix}`}
                 className={`nav-link ${isActive ? "nav-link--active" : ""}`}
               >
-                {isActive && (
-                  <motion.span
-                    className="nav-indicator"
-                    layoutId="nav-indicator"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
+                {isActive && <span className="nav-indicator" />}
                 <Icon size={14} />
                 {link.label}
               </Link>
@@ -105,6 +101,6 @@ export default function Navbar({ visible = true }: { visible?: boolean }) {
           </Link>
         )}
       </div>
-    </motion.nav>
+    </nav>
   );
 }
