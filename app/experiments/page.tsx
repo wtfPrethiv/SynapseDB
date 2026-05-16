@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -26,7 +26,7 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`badge badge-${status.toLowerCase()}`}>{status}</span>;
 }
 
-export default function ExperimentsPage() {
+function ExperimentsPageInner() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
@@ -237,5 +237,13 @@ export default function ExperimentsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ExperimentsPage() {
+  return (
+    <Suspense>
+      <ExperimentsPageInner />
+    </Suspense>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -25,7 +24,7 @@ interface UsageRow {
   researcher_name: string;
 }
 
-export default function DatasetsPage() {
+function DatasetsPageInner() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [usageByExperiment, setUsageByExperiment] = useState<UsageRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,12 +54,7 @@ export default function DatasetsPage() {
       <Navbar />
       <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "3rem" }}>
         {isDemo && <DemoBanner />}
-        <motion.div
-          className="page-header"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="page-header">
           <div className="breadcrumb">
             <Link href="/dashboard">synapsedb</Link>
             <span className="breadcrumb-sep">/</span>
@@ -68,7 +62,7 @@ export default function DatasetsPage() {
           </div>
           <h1 className="page-title">Dataset Registry</h1>
           <p className="page-sub">Versioned dataset catalog used across all experiment runs.</p>
-        </motion.div>
+        </div>
 
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: "4rem", color: "var(--ink-4)" }}>
@@ -76,23 +70,14 @@ export default function DatasetsPage() {
           </div>
         ) : (
           <>
-            <motion.div
-              className="grid-3 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
+            <div className="grid-3 mb-8">
               {datasets.map((d, i) => {
                 const c = colors[i % colors.length];
                 return (
-                  <motion.div
+                  <div
                     key={d.dataset_id}
                     className="card"
                     style={{ border: `1px solid ${c}20`, cursor: "default" }}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + i * 0.08 }}
-                    whileHover={{ y: -3 }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem" }}>
                       <div style={{ width: 40, height: 40, borderRadius: "var(--radius-sm)", background: `${c}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -131,12 +116,12 @@ export default function DatasetsPage() {
                         <div style={{ width: `${(Number(d.usage_count) / maxUsage) * 100}%`, height: "100%", background: c, borderRadius: "2px" }} />
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
-            </motion.div>
+            </div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+            <div>
               <div className="section-header mb-4">
                 <div className="section-title">Dataset Usage by Experiment</div>
               </div>
@@ -174,10 +159,18 @@ export default function DatasetsPage() {
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </div>
           </>
         )}
       </div>
     </div>
+  );
+}
+
+export default function DatasetsPage() {
+  return (
+    <Suspense>
+      <DatasetsPageInner />
+    </Suspense>
   );
 }

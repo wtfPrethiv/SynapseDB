@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -22,7 +22,7 @@ const navLinks = [
   { label: "Datasets", href: "/datasets", icon: Database },
 ];
 
-export default function Navbar({ visible = true }: { visible?: boolean }) {
+function NavbarInner({ visible = true }: { visible?: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [scrolled, setScrolled] = useState(false);
@@ -102,5 +102,13 @@ export default function Navbar({ visible = true }: { visible?: boolean }) {
         )}
       </div>
     </nav>
+  );
+}
+
+export default function Navbar({ visible = true }: { visible?: boolean }) {
+  return (
+    <Suspense>
+      <NavbarInner visible={visible} />
+    </Suspense>
   );
 }

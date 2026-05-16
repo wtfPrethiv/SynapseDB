@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import pool from "../../lib/db";
-import { ResultSetHeader } from "mysql2";
+import type { ResultSetHeader } from "mysql2";
 
 export async function POST(req: Request) {
   const session = await auth();

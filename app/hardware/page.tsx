@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -25,7 +25,7 @@ interface Assignment {
   researcher_name: string;
 }
 
-export default function HardwarePage() {
+function HardwarePageInner() {
   const [stats, setStats] = useState<HardwareStat[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,5 +175,13 @@ export default function HardwarePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function HardwarePage() {
+  return (
+    <Suspense>
+      <HardwarePageInner />
+    </Suspense>
   );
 }

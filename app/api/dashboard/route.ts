@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   // Authenticated — query real database
   try {
     const pool = (await import("../../lib/db")).default;
-    const { RowDataPacket } = await import("mysql2");
+
 
     const [[{ totalExperiments }]] = await pool.query<import("mysql2").RowDataPacket[]>(
       "SELECT COUNT(*) AS totalExperiments FROM experiments"
