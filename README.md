@@ -60,7 +60,7 @@ SynapseDB gives ML research teams a single source of truth for experiment proven
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/synapsedb.git
+git clone https://github.com/wtfPrethiv/SynapseDB.git
 cd synapsedb
 npm install
 ```
